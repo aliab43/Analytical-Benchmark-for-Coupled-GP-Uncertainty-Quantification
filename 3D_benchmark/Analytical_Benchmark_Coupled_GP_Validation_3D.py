@@ -35,10 +35,10 @@ COLOR_PROPOSED = "#E69F00"
 COLOR_TRUE = "#D55E00"
 COLOR_GP_PATH = "#222222"
 COMPONENT_COLORS = ["#0072B2", "#009E73", "#CC79A7"]
-TITLE_FONTSIZE = 15
-AXIS_LABEL_FONTSIZE = 16
-TICK_LABEL_FONTSIZE = 12
-LEGEND_FONTSIZE = 10
+TITLE_FONTSIZE = 17
+AXIS_LABEL_FONTSIZE = 18
+TICK_LABEL_FONTSIZE = 13
+LEGEND_FONTSIZE = 11
 
 
 def matern_kernel():
@@ -550,7 +550,7 @@ def fmt_vec(v):
 
 def plot_validation(cases, y_star):
     n_cases = len(cases)
-    fig, axes = plt.subplots(n_cases, OUTPUT_DIM + 1, figsize=(22, 5.2 * n_cases), squeeze=False)
+    fig, axes = plt.subplots(n_cases, OUTPUT_DIM + 1, figsize=(23, 5.6 * n_cases), squeeze=False)
 
     for row, case in enumerate(cases):
         name = case["name"]
