@@ -36,9 +36,9 @@ COLOR_TRUE = "#D55E00"
 COLOR_GP_PATH = "#222222"
 COMPONENT_COLORS = ["#0072B2", "#009E73", "#CC79A7"]
 TITLE_FONTSIZE = 15
-AXIS_LABEL_FONTSIZE = 14
+AXIS_LABEL_FONTSIZE = 16
 TICK_LABEL_FONTSIZE = 12
-LEGEND_FONTSIZE = 11
+LEGEND_FONTSIZE = 10
 
 
 def matern_kernel():
@@ -640,7 +640,7 @@ def plot_validation(cases, y_star):
         )
         ax.set_title(rf"{name}: distribution of $\|\mathbf{{y}}\|_2$", fontsize=TITLE_FONTSIZE)
         ax.set_xlabel(
-            r"$\|\mathbf{y}\|_2$ = Euclidean norm of coupled output $\mathbf{y}=(y_1,y_2,y_3)$",
+            r"$\|\mathbf{y}\|_2$ = Euclidean norm of coupled output",
             fontsize=AXIS_LABEL_FONTSIZE,
         )
         ax.set_ylabel("density", fontsize=AXIS_LABEL_FONTSIZE)
