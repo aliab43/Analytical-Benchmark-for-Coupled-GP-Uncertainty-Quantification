@@ -34,52 +34,27 @@ folder contains the multidimensional benchmark used for the paper validation.
 The multidimensional benchmark considers two deterministic vector-valued
 functions
 
-$$
-g^{(1)},g^{(2)}:[0,1]^3\to\mathbb{R}^3,
-$$
+$$g^{(1)},g^{(2)}:[0,1]^3\to\mathbb{R}^3,$$
 
 and a coupled fixed point
 
-$$
-\mathbf{y}^\star
-=
-\frac12\left(g^{(1)}(\mathbf{y}^\star)+g^{(2)}(\mathbf{y}^\star)\right).
-$$
+$$\mathbf{y}^\star = \frac12\left(g^{(1)}(\mathbf{y}^\star)+g^{(2)}(\mathbf{y}^\star)\right).$$
 
 The example is written in the general composition form
 
-$$
-\mathcal{T}=\Gamma_2\circ\Gamma_1,
-$$
+$$\mathcal{T}=\Gamma_2\circ\Gamma_1,$$
 
 where
 
-$$
-\Gamma_1:\mathbb{R}^3\to\mathbb{R}^6,
-\qquad
-\Gamma_1(\mathbf{x})
-=
-\left(x_1,x_2,x_3,g^{(1)}_1(\mathbf{x}),g^{(1)}_2(\mathbf{x}),g^{(1)}_3(\mathbf{x})\right),
-$$
+$$\Gamma_1:\mathbb{R}^3\to\mathbb{R}^6, \qquad \Gamma_1(\mathbf{x}) = \left(x_1,x_2,x_3,g^{(1)}_1(\mathbf{x}),g^{(1)}_2(\mathbf{x}),g^{(1)}_3(\mathbf{x})\right),$$
 
 and
 
-$$
-\Gamma_2:\mathbb{R}^6\to\mathbb{R}^3,
-\qquad
-\Gamma_{2,j}(\mathbf{y})
-=
-\frac{y_{3+j}}{2}
-+
-\frac12 g^{(2)}_j\left((y_\ell)_{\ell=1}^3\right),
-\quad j=1,2,3.
-$$
+$$\Gamma_2:\mathbb{R}^6\to\mathbb{R}^3, \qquad \Gamma_{2,j}(\mathbf{y}) = \frac{y_{3+j}}{2} + \frac12 g^{(2)}_j\left((y_\ell)_{\ell=1}^3\right), \quad j=1,2,3.$$
 
 The deterministic reference fixed point is
 
-$$
-\mathbf{y}^\star=(0.385949,\;0.386257,\;0.383437)^\top.
-$$
+$$\mathbf{y}^\star=(0.385949,\;0.386257,\;0.383437)^\top.$$
 
 ## Structured GP Surrogates
 
@@ -88,44 +63,19 @@ required by the coupling framework.
 
 For \(f_1:\mathbb{R}^3\to\mathbb{R}^6\),
 
-$$
-m_{f_1}(\mathbf{x})=(x_1,x_2,x_3,0,0,0),
-$$
+$$m_{f_1}(\mathbf{x})=(x_1,x_2,x_3,0,0,0),$$
 
 and
 
-$$
-\mathrm{Cov}\left(f_1(\mathbf{x}),f_1(\mathbf{x}')\right)
-=
-\mathrm{diag}\left(
-0,0,0,
-k(\mathbf{x},\mathbf{x}'),
-k(\mathbf{x},\mathbf{x}'),
-k(\mathbf{x},\mathbf{x}')
-\right).
-$$
+$$\mathrm{Cov}\left(f_1(\mathbf{x}),f_1(\mathbf{x}')\right) = \mathrm{diag}\left( 0,0,0, k(\mathbf{x},\mathbf{x}'), k(\mathbf{x},\mathbf{x}'), k(\mathbf{x},\mathbf{x}') \right).$$
 
 For \(f_2:\mathbb{R}^6\to\mathbb{R}^3\),
 
-$$
-m_{f_2}(\mathbf{y})
-=
-\left(\frac{y_4}{2},\frac{y_5}{2},\frac{y_6}{2}\right),
-$$
+$$m_{f_2}(\mathbf{y}) = \left(\frac{y_4}{2},\frac{y_5}{2},\frac{y_6}{2}\right),$$
 
 and
 
-$$
-\mathrm{Cov}\left(f_2(\mathbf{y}),f_2(\mathbf{y}')\right)
-=
-\mathrm{diag}\left(
-k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'),
-k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'),
-k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}')
-\right),
-\qquad
-\tilde{\mathbf{y}}=(y_1,y_2,y_3).
-$$
+$$\mathrm{Cov}\left(f_2(\mathbf{y}),f_2(\mathbf{y}')\right) = \mathrm{diag}\left( k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'), k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'), k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}') \right), \qquad \tilde{\mathbf{y}}=(y_1,y_2,y_3).$$
 
 The scalar kernel \(k\) is a fixed Matern \(5/2\) kernel.
 
