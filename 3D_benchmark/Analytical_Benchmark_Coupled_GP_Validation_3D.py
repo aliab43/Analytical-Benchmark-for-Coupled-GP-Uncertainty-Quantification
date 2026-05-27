@@ -35,6 +35,10 @@ COLOR_PROPOSED = "#E69F00"
 COLOR_TRUE = "#D55E00"
 COLOR_GP_PATH = "#222222"
 COMPONENT_COLORS = ["#0072B2", "#009E73", "#CC79A7"]
+TITLE_FONTSIZE = 15
+AXIS_LABEL_FONTSIZE = 14
+TICK_LABEL_FONTSIZE = 12
+LEGEND_FONTSIZE = 11
 
 
 def matern_kernel():
@@ -593,11 +597,12 @@ def plot_validation(cases, y_star):
                 lw=2.0,
                 label=rf"GP-mean $y_{k + 1}$",
             )
-            ax.set_title(rf"{name}: $y_{k + 1}$")
-            ax.set_xlabel(rf"$y_{k + 1}$")
-            ax.set_ylabel("density")
+            ax.set_title(rf"{name}: $y_{k + 1}$", fontsize=TITLE_FONTSIZE)
+            ax.set_xlabel(rf"$y_{k + 1}$", fontsize=AXIS_LABEL_FONTSIZE)
+            ax.set_ylabel("density", fontsize=AXIS_LABEL_FONTSIZE)
+            ax.tick_params(axis="both", labelsize=TICK_LABEL_FONTSIZE)
             ax.grid(True, alpha=0.3)
-            ax.legend(fontsize=8)
+            ax.legend(fontsize=LEGEND_FONTSIZE)
 
         ax = axes[row, OUTPUT_DIM]
         norm_r = np.linalg.norm(Y_r, axis=1)
@@ -633,11 +638,15 @@ def plot_validation(cases, y_star):
             lw=2.0,
             label=r"GP-mean $\|\mathbf{y}\|_2$",
         )
-        ax.set_title(rf"{name}: distribution of $\|\mathbf{{y}}\|_2$")
-        ax.set_xlabel(r"$\|\mathbf{y}\|_2$ = Euclidean norm of coupled output $\mathbf{y}=(y_1,y_2,y_3)$")
-        ax.set_ylabel("density")
+        ax.set_title(rf"{name}: distribution of $\|\mathbf{{y}}\|_2$", fontsize=TITLE_FONTSIZE)
+        ax.set_xlabel(
+            r"$\|\mathbf{y}\|_2$ = Euclidean norm of coupled output $\mathbf{y}=(y_1,y_2,y_3)$",
+            fontsize=AXIS_LABEL_FONTSIZE,
+        )
+        ax.set_ylabel("density", fontsize=AXIS_LABEL_FONTSIZE)
+        ax.tick_params(axis="both", labelsize=TICK_LABEL_FONTSIZE)
         ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=8)
+        ax.legend(fontsize=LEGEND_FONTSIZE)
 
     plt.tight_layout()
     fig.savefig(FIGURES_DIR / "multidim_method_validation.png", dpi=200)
