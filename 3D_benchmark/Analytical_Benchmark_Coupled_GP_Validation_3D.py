@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 from scipy.linalg import solve_triangular
-from scipy.stats import ks_2samp, norm, ttest_ind
+from scipy.stats import ks_2samp, ttest_ind
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -468,10 +468,15 @@ def compare_methods(Y_rigorous, Y_proposed):
     }
 
 
-def empirical_coverage_95(y_true, mean, std):
-    std = np.maximum(std, 1e-14)
-    z_value = norm.ppf(0.975)
-    return np.mean(np.abs(y_true - mean) <= z_value * std)
+def latex_sci(value, digits=2):
+    value = float(value)
+    if value == 0.0:
+        return "0"
+    exponent = int(np.floor(np.log10(abs(value))))
+    mantissa = value / (10.0 ** exponent)
+    if exponent == 0:
+        return f"{value:.{digits}f}"
+    return rf"${mantissa:.{digits}f}\times10^{{{exponent}}}$"
 
 
 def evaluate_surrogate_quality(gps1, gps2, n_eval=4000, seed=202405):
@@ -484,11 +489,11 @@ def evaluate_surrogate_quality(gps1, gps2, n_eval=4000, seed=202405):
         (r"$g^{(2)}$", gps2, g2_true(X_eval), 2.0),
     ]:
         for k in range(OUTPUT_DIM):
-            mean, std = gps[k].predict(X_eval, return_std=True)
+            mean = gps[k].predict(X_eval)
             mean = scale * mean
-            std = scale * std
             y_true = true_values[:, k]
-            ss_res = np.sum((y_true - mean) ** 2)
+            residual = y_true - mean
+            ss_res = np.sum(residual**2)
             ss_tot = np.sum((y_true - y_true.mean()) ** 2)
             q2 = 1.0 - ss_res / ss_tot
             rows.append(
@@ -496,9 +501,8 @@ def evaluate_surrogate_quality(gps1, gps2, n_eval=4000, seed=202405):
                     "function": function_name,
                     "component": rf"$y_{k + 1}$",
                     "q2": q2,
-                    "mean_sigma": std.mean(),
-                    "mean_ci_width": (2.0 * 1.96 * std).mean(),
-                    "coverage_95": empirical_coverage_95(y_true, mean, std),
+                    "rmse": np.sqrt(np.mean(residual**2)),
+                    "mae": np.mean(np.abs(residual)),
                 }
             )
     return rows
@@ -509,34 +513,40 @@ def write_surrogate_quality_table(quality_by_case):
     csv_path = FIGURES_DIR / "multidim_surrogate_quality_table.csv"
 
     with csv_path.open("w", encoding="utf-8") as handle:
-        handle.write("DOE,function,component,Q2,mean_sigma,mean_95_width,coverage_95\n")
+        handle.write("DOE,function,component,Q2,RMSE,MAE\n")
         for case_name, rows in quality_by_case:
             for row in rows:
                 handle.write(
                     f"{case_name},{row['function']},{row['component']},"
-                    f"{row['q2']:.6f},{row['mean_sigma']:.6e},"
-                    f"{row['mean_ci_width']:.6e},{row['coverage_95']:.6f}\n"
+                    f"{row['q2']:.6f},{row['rmse']:.6e},{row['mae']:.6e}\n"
                 )
 
     with tex_path.open("w", encoding="utf-8") as handle:
+        handle.write(
+            "Table~\\ref{tab:surrogate_quality_3d} reports the deterministic prediction accuracy "
+            "of the uncertain GP blocks associated with the two analytical functions "
+            "$g^{(1)}$ and $g^{(2)}$. In the structured implementation, the uncertain "
+            "block of $f_1$ corresponds to $g^{(1)}$, whereas the uncertain block of "
+            "$f_2$ corresponds to $\\tfrac12 g^{(2)}$; the indicators associated with "
+            "$g^{(2)}$ are therefore reported after rescaling the posterior mean to "
+            "the original function $g^{(2)}$. The table includes the predictive "
+            "coefficient $Q^2$, the root mean square error (RMSE), and the mean "
+            "absolute error (MAE), all computed on an independent validation set.\n\n"
+        )
         handle.write("\\begin{table}[ht!]\\centering\n")
-        handle.write("\\caption{Quality indicators for the multidimensional GP metamodels. "
-                     "$Q^2$ is computed on an independent validation set; "
-                     "$\\overline{\\sigma}$ is the average posterior standard deviation; "
-                     "$\\overline{w}_{95}$ is the average width of the $95\\%$ credible interval; "
-                     "$\\widehat{C}_{95}$ is the empirical coverage probability of the $95\\%$ credible interval.}\n")
+        handle.write("\\caption{Deterministic prediction accuracy of the multidimensional GP metamodels, reported on the scale of the original analytical functions. "
+                     "$Q^2$, RMSE and MAE are computed on an independent validation set.}\n")
         handle.write("\\label{tab:surrogate_quality_3d}\n")
-        handle.write("\\begin{tabular}{llrrrr}\n")
+        handle.write("\\begin{tabular}{llrrr}\n")
         handle.write("\\hline\n")
-        handle.write("DOE / output & component & $Q^2$ & $\\overline{\\sigma}$ & "
-                     "$\\overline{w}_{95}$ & $\\widehat{C}_{95}$ \\\\\n")
+        handle.write("DOE / function & component & $Q^2$ & RMSE & MAE \\\\\n")
         handle.write("\\hline\n")
         for case_name, rows in quality_by_case:
             for row in rows:
                 handle.write(
                     f"{case_name} {row['function']} & {row['component']} & "
-                    f"{row['q2']:.4f} & {row['mean_sigma']:.2e} & "
-                    f"{row['mean_ci_width']:.2e} & {row['coverage_95']:.3f} \\\\\n"
+                    f"{row['q2']:.4f} & {latex_sci(row['rmse'])} & "
+                    f"{latex_sci(row['mae'])} \\\\\n"
                 )
         handle.write("\\hline\n")
         handle.write("\\end{tabular}\n")
@@ -817,9 +827,8 @@ def main():
             print(
                 f"  {row['function']} {row['component']}: "
                 f"Q2={row['q2']:.4f}, "
-                f"mean sigma={row['mean_sigma']:.3e}, "
-                f"mean 95% width={row['mean_ci_width']:.3e}, "
-                f"95% coverage={row['coverage_95']:.3f}"
+                f"RMSE={row['rmse']:.3e}, "
+                f"MAE={row['mae']:.3e}"
             )
 
         det_path = compute_mean_path(gps1, gps2)

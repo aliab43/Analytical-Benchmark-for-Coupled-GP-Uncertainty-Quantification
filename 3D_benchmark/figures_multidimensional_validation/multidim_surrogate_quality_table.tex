@@ -1,22 +1,24 @@
+Table~\ref{tab:surrogate_quality_3d} reports the deterministic prediction accuracy of the uncertain GP blocks associated with the two analytical functions $g^{(1)}$ and $g^{(2)}$. In the structured implementation, the uncertain block of $f_1$ corresponds to $g^{(1)}$, whereas the uncertain block of $f_2$ corresponds to $\tfrac12 g^{(2)}$; the indicators associated with $g^{(2)}$ are therefore reported after rescaling the posterior mean to the original function $g^{(2)}$. The table includes the predictive coefficient $Q^2$, the root mean square error (RMSE), and the mean absolute error (MAE), all computed on an independent validation set.
+
 \begin{table}[ht!]\centering
-\caption{Quality indicators for the multidimensional GP metamodels. $Q^2$ is computed on an independent validation set; $\overline{\sigma}$ is the average posterior standard deviation; $\overline{w}_{95}$ is the average width of the $95\%$ credible interval; $\widehat{C}_{95}$ is the empirical coverage probability of the $95\%$ credible interval.}
+\caption{Deterministic prediction accuracy of the multidimensional GP metamodels, reported on the scale of the original analytical functions. $Q^2$, RMSE and MAE are computed on an independent validation set.}
 \label{tab:surrogate_quality_3d}
-\begin{tabular}{llrrrr}
+\begin{tabular}{llrrr}
 \hline
-DOE / output & component & $Q^2$ & $\overline{\sigma}$ & $\overline{w}_{95}$ & $\widehat{C}_{95}$ \\
+DOE / function & component & $Q^2$ & RMSE & MAE \\
 \hline
-smallDOE $g^{(1)}$ & $y_1$ & 0.9493 & 1.61e-01 & 6.31e-01 & 1.000 \\
-smallDOE $g^{(1)}$ & $y_2$ & 0.6654 & 1.61e-01 & 6.31e-01 & 1.000 \\
-smallDOE $g^{(1)}$ & $y_3$ & 0.9149 & 1.61e-01 & 6.31e-01 & 1.000 \\
-smallDOE $g^{(2)}$ & $y_1$ & 0.8663 & 3.22e-01 & 1.26e+00 & 1.000 \\
-smallDOE $g^{(2)}$ & $y_2$ & 0.9463 & 3.22e-01 & 1.26e+00 & 1.000 \\
-smallDOE $g^{(2)}$ & $y_3$ & 0.7947 & 3.22e-01 & 1.26e+00 & 1.000 \\
-largeDOE $g^{(1)}$ & $y_1$ & 1.0000 & 9.10e-03 & 3.57e-02 & 1.000 \\
-largeDOE $g^{(1)}$ & $y_2$ & 0.9999 & 9.10e-03 & 3.57e-02 & 1.000 \\
-largeDOE $g^{(1)}$ & $y_3$ & 1.0000 & 9.10e-03 & 3.57e-02 & 1.000 \\
-largeDOE $g^{(2)}$ & $y_1$ & 0.9999 & 1.82e-02 & 7.13e-02 & 1.000 \\
-largeDOE $g^{(2)}$ & $y_2$ & 1.0000 & 1.82e-02 & 7.13e-02 & 1.000 \\
-largeDOE $g^{(2)}$ & $y_3$ & 0.9999 & 1.82e-02 & 7.13e-02 & 1.000 \\
+smallDOE $g^{(1)}$ & $y_1$ & 0.9493 & $1.31\times10^{-2}$ & $8.61\times10^{-3}$ \\
+smallDOE $g^{(1)}$ & $y_2$ & 0.6654 & $1.38\times10^{-2}$ & $9.63\times10^{-3}$ \\
+smallDOE $g^{(1)}$ & $y_3$ & 0.9149 & $1.27\times10^{-2}$ & $8.33\times10^{-3}$ \\
+smallDOE $g^{(2)}$ & $y_1$ & 0.8663 & $1.11\times10^{-2}$ & $6.82\times10^{-3}$ \\
+smallDOE $g^{(2)}$ & $y_2$ & 0.9463 & $1.44\times10^{-2}$ & $9.30\times10^{-3}$ \\
+smallDOE $g^{(2)}$ & $y_3$ & 0.7947 & $1.12\times10^{-2}$ & $7.40\times10^{-3}$ \\
+largeDOE $g^{(1)}$ & $y_1$ & 1.0000 & $3.69\times10^{-4}$ & $9.82\times10^{-5}$ \\
+largeDOE $g^{(1)}$ & $y_2$ & 0.9999 & $1.88\times10^{-4}$ & $6.18\times10^{-5}$ \\
+largeDOE $g^{(1)}$ & $y_3$ & 1.0000 & $3.02\times10^{-4}$ & $8.64\times10^{-5}$ \\
+largeDOE $g^{(2)}$ & $y_1$ & 0.9999 & $2.37\times10^{-4}$ & $6.85\times10^{-5}$ \\
+largeDOE $g^{(2)}$ & $y_2$ & 1.0000 & $3.13\times10^{-4}$ & $8.57\times10^{-5}$ \\
+largeDOE $g^{(2)}$ & $y_3$ & 0.9999 & $2.15\times10^{-4}$ & $6.82\times10^{-5}$ \\
 \hline
 \end{tabular}
 \end{table}
