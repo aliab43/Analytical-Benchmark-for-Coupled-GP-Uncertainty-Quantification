@@ -550,7 +550,7 @@ def fmt_vec(v):
 
 def plot_validation(cases, y_star):
     n_cases = len(cases)
-    fig, axes = plt.subplots(n_cases, OUTPUT_DIM + 1, figsize=(18, 4.2 * n_cases), squeeze=False)
+    fig, axes = plt.subplots(n_cases, OUTPUT_DIM + 1, figsize=(22, 5.2 * n_cases), squeeze=False)
 
     for row, case in enumerate(cases):
         name = case["name"]
@@ -640,7 +640,7 @@ def plot_validation(cases, y_star):
         )
         ax.set_title(rf"{name}: distribution of $\|\mathbf{{y}}\|_2$", fontsize=TITLE_FONTSIZE)
         ax.set_xlabel(
-            r"$\|\mathbf{y}\|_2$ = Euclidean norm of coupled output",
+            r"$\|\mathbf{y}\|_2$ = Euclidean norm of $\mathbf{y}$",
             fontsize=AXIS_LABEL_FONTSIZE,
         )
         ax.set_ylabel("density", fontsize=AXIS_LABEL_FONTSIZE)
