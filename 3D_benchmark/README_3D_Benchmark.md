@@ -1,19 +1,20 @@
-# Multidimensional Analytical Benchmark for Coupled GP Uncertainty Quantification
+# 3D Analytical Benchmark for Coupled GP Uncertainty Quantification
 
-This file documents the three-dimensional analytical benchmark implemented in
-`Analytical_Benchmark_Coupled_GP_Validation_review.py`.
+This directory contains the multidimensional benchmark implemented in
+`Analytical_Benchmark_Coupled_GP_Validation_3D.py`.
 
-The benchmark extends the original scalar example to a vector-valued coupled
-problem. It is designed to validate two uncertainty propagation strategies for
-coupled Gaussian-process (GP) surrogates:
+The benchmark is a controlled three-dimensional example designed to validate
+uncertainty propagation through coupled Gaussian-process (GP) surrogate models.
+It compares:
 
 - **Method 2:** rigorous trajectory-conditioned GP sampling;
-- **Method 3:** proposed fixed mean-path constant-offset approximation.
+- **Method 3:** fixed mean-path constant-offset approximation.
 
-The goal is to check when Method 3 reproduces Method 2, and to show that the
-approximation improves when the design of experiments becomes denser.
+The benchmark is intentionally analytical: the exact deterministic functions and
+the deterministic reference fixed point are known, which makes the comparison
+between the two stochastic propagation methods transparent.
 
-## Mathematical Benchmark
+## 1. Analytical Coupled Problem
 
 Let
 
@@ -49,24 +50,34 @@ g^{(2)}(\mathbf{x})=
 \end{pmatrix}.
 $$
 
-The coupled fixed point is
+The coupled reference solution is the fixed point
 
 $$
 \mathbf{y}^\star
 =
-\frac12\left(g^{(1)}(\mathbf{y}^\star)+g^{(2)}(\mathbf{y}^\star)\right).
+\frac12
+\left(
+g^{(1)}(\mathbf{y}^\star)
++
+g^{(2)}(\mathbf{y}^\star)
+\right).
 $$
 
-The deterministic reference solution obtained by fixed-point iteration is
+The deterministic fixed-point iteration gives
 
 $$
 \mathbf{y}^\star=(0.385949,\;0.386257,\;0.383437)^\top.
 $$
 
-## Coupling in the General Framework
+## 2. Embedding in the General Coupling Framework
 
-The relaxation benchmark is written in the same composition form as the general
-coupling framework of the paper.
+The example is written as a composition
+
+$$
+\mathcal{T}=\Gamma_2\circ\Gamma_1,
+$$
+
+so that it fits the theoretical framework used for coupled surrogate models.
 
 Define
 
@@ -79,8 +90,12 @@ by
 $$
 \Gamma_1(\mathbf{x})
 =
-\left(x_1,x_2,x_3,
-g^{(1)}_1(\mathbf{x}),g^{(1)}_2(\mathbf{x}),g^{(1)}_3(\mathbf{x})\right).
+\left(
+x_1,x_2,x_3,
+g^{(1)}_1(\mathbf{x}),
+g^{(1)}_2(\mathbf{x}),
+g^{(1)}_3(\mathbf{x})
+\right).
 $$
 
 Equivalently,
@@ -115,7 +130,16 @@ $$
 Then
 
 $$
-\mathcal{T}=\Gamma_2\circ\Gamma_1,
+\mathcal{T}(\mathbf{x})
+=
+\Gamma_2(\Gamma_1(\mathbf{x}))
+=
+\frac12
+\left(
+g^{(1)}(\mathbf{x})
++
+g^{(2)}(\mathbf{x})
+\right),
 $$
 
 and the benchmark solves
@@ -124,23 +148,23 @@ $$
 \mathbf{y}^\star\in\mathrm{Fix}(\mathcal{T}).
 $$
 
-The code numerically checks that
+The code checks numerically that
 
 $$
-\mathcal{T}([0,1]^3)\subset[0,1]^3.
+\mathcal{T}([0,1]^3)\subset[0,1]^3,
 $$
 
-It also estimates the spectral norm of the Jacobian and obtains
+and estimates the contraction modulus as
 
 $$
-\rho\simeq 0.2079<1,
+\rho\simeq 0.2079<1.
 $$
 
-which supports the contractive character of the deterministic coupling map.
+## 3. Structured GP Surrogates
 
-## Structured Gaussian Processes
+The GP surrogates have the structured form required by the coupling.
 
-The GP surrogates are chosen to match the structured coupling exactly.
+### GP for the first block
 
 For
 
@@ -151,13 +175,18 @@ $$
 the prior mean is
 
 $$
-m_{f_1}(\mathbf{x})=(x_1,x_2,x_3,0,0,0),
+m_{f_1}(\mathbf{x})
+=
+(x_1,x_2,x_3,0,0,0),
 $$
 
-and the covariance is diagonal:
+and the covariance is
 
 $$
-\mathrm{Cov}\left(f_1(\mathbf{x}),f_1(\mathbf{x}')\right)
+\mathrm{Cov}
+\left(
+f_1(\mathbf{x}),f_1(\mathbf{x}')
+\right)
 =
 \mathrm{diag}
 \left(
@@ -167,6 +196,11 @@ k(\mathbf{x},\mathbf{x}'),
 k(\mathbf{x},\mathbf{x}')
 \right).
 $$
+
+Only the last three components are uncertain; the first three are deterministic
+identity components.
+
+### GP for the second block
 
 For
 
@@ -179,13 +213,20 @@ the prior mean is
 $$
 m_{f_2}(\mathbf{y})
 =
-\left(\frac{y_4}{2},\frac{y_5}{2},\frac{y_6}{2}\right),
+\left(
+\frac{y_4}{2},
+\frac{y_5}{2},
+\frac{y_6}{2}
+\right),
 $$
 
 and the covariance is
 
 $$
-\mathrm{Cov}\left(f_2(\mathbf{y}),f_2(\mathbf{y}')\right)
+\mathrm{Cov}
+\left(
+f_2(\mathbf{y}),f_2(\mathbf{y}')
+\right)
 =
 \mathrm{diag}
 \left(
@@ -213,107 +254,74 @@ $$
 \alpha=10^{-12}
 $$
 
-is added only for numerical stability.
+is used only for numerical stability.
 
-## Numerical Settings
+## 4. Numerical Configuration
 
-The current benchmark uses:
+The script uses:
 
 - smallDOE: \(n=20\) training points per function;
 - largeDOE: \(n=500\) training points per function;
 - \(N=500\) Monte Carlo replications;
 - fixed-point tolerance \(10^{-6}\);
 - maximum iteration count \(M_{\max}=200\);
+- Latin hypercube sampling on \([0,1]^3\);
 - random seed `42`.
 
-The DOE points are generated by Latin hypercube sampling on \([0,1]^3\).
+## 5. Outputs
 
-## Metamodel Quality Table
-
-Instead of plotting the metamodels in 3D, the script reports quantitative
-quality metrics for each function and each output component:
-
-- \(Q^2\), computed on an independent validation set;
-- \(\overline{\sigma}\), the average posterior standard deviation;
-- \(\overline{w}_{95}\), the average width of the \(95\%\) credible interval;
-- \(\widehat{C}_{95}\), the empirical coverage probability of the \(95\%\)
-  credible interval.
-
-The table is exported as:
-
-- `figures_multidimensional_validation/multidim_surrogate_quality_table.tex`
-- `figures_multidimensional_validation/multidim_surrogate_quality_table.csv`
-
-## Method Comparison
-
-The final coupled-output distributions are compared with:
-
-- componentwise empirical means and variances;
-- central empirical \(95\%\) intervals;
-- Kolmogorov--Smirnov tests, comparing the full empirical distributions;
-- Welch tests, comparing the empirical means;
-- the Euclidean norm distribution \(||\mathbf{y}||_2\);
-- the maximum distance between rigorous stochastic trajectories and the
-  deterministic GP-mean path.
-
-The main figure is:
-
-- `figures_multidimensional_validation/multidim_method_validation.png`
-
-It shows separate histograms for \(y_1\), \(y_2\), \(y_3\), and
-\(||\mathbf{y}||_2\), for both smallDOE and largeDOE.
-
-The script also produces a complementary 3D cloud:
-
-- `figures_multidimensional_validation/multidim_3d_output_cloud.png`
-
-Each point in this cloud is one Monte Carlo coupled output
-\(\mathbf{y}^{(j)}=(y_1^{(j)},y_2^{(j)},y_3^{(j)})\).
-
-## How to Run
-
-Install the required Python packages:
-
-```bash
-python -m pip install numpy scipy scikit-learn matplotlib
-```
-
-Run the benchmark:
-
-```bash
-python Analytical_Benchmark_Coupled_GP_Validation_review.py
-```
-
-The script prints the numerical results and writes all tables and figures to:
+Running the script creates:
 
 ```text
 figures_multidimensional_validation/
 ```
 
-## Interpretation
+with:
 
-For smallDOE, the rigorous trajectory-conditioned method produces wider output
-distributions and the statistical tests detect differences between Method 2 and
-Method 3. This is expected because the stochastic trajectories can move far from
-the deterministic GP-mean path.
+- `multidim_surrogate_quality_table.tex`;
+- `multidim_surrogate_quality_table.csv`;
+- `multidim_method_validation.png`;
+- `multidim_3d_output_cloud.png`.
 
-For largeDOE, the posterior uncertainty decreases, the stochastic trajectories
-stay closer to the deterministic path, and Method 3 becomes statistically close
-to Method 2. This supports the fixed mean-path approximation when the surrogate
-design is sufficiently informative.
+The table reports:
 
-## Files to Add to the Repository
+- \(Q^2\), the predictive coefficient on an independent validation set;
+- \(\overline{\sigma}\), the average posterior standard deviation;
+- \(\overline{w}_{95}\), the average width of the \(95\%\) credible interval;
+- \(\widehat{C}_{95}\), the empirical coverage probability of that interval.
 
-Recommended files for the GitHub update:
+The main validation figure reports separate histograms for:
 
-```text
-Analytical_Benchmark_Coupled_GP_Validation_review.py
-README_3D_Benchmark.md
-figures_multidimensional_validation/multidim_surrogate_quality_table.tex
-figures_multidimensional_validation/multidim_surrogate_quality_table.csv
-figures_multidimensional_validation/multidim_method_validation.png
-figures_multidimensional_validation/multidim_3d_output_cloud.png
+$$
+y_1,\qquad y_2,\qquad y_3,\qquad ||\mathbf{y}||_2.
+$$
+
+The 3D cloud is a complementary visualization of the Monte Carlo vector outputs
+\(\mathbf{y}^{(j)}=(y_1^{(j)},y_2^{(j)},y_3^{(j)})\).
+
+## 6. How to Run
+
+From the repository root:
+
+```bash
+python -m pip install -r requirements.txt
+python 3D_benchmark/Analytical_Benchmark_Coupled_GP_Validation_3D.py
 ```
 
-The old vector-field figures in `figures_multidimensional_validation/` are not
-needed for the paper version of the benchmark.
+Alternatively, from this directory:
+
+```bash
+python Analytical_Benchmark_Coupled_GP_Validation_3D.py
+```
+
+## 7. Interpretation
+
+For the small design, the rigorous trajectory-conditioned method produces a
+wider coupled-output distribution and the Kolmogorov--Smirnov tests detect
+distributional differences between Method 2 and Method 3.
+
+For the dense design, posterior uncertainty decreases, the stochastic
+trajectories remain close to the deterministic GP-mean path, and Method 3
+becomes statistically close to Method 2. This supports the fixed-path
+constant-offset approximation when the surrogate design is sufficiently
+informative.

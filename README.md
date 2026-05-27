@@ -1,97 +1,201 @@
-# Analytical Benchmark for Coupled GP Uncertainty Quantification
+# Analytical Benchmarks for Coupled GP Uncertainty Quantification
 
-This benchmark validates the uncertainty propagation strategy used in the coupled surrogate workflow by comparing two sampling methods on a controlled analytical test case.
+This repository contains analytical benchmark examples for validating uncertainty
+propagation through coupled Gaussian-process (GP) surrogate models.
 
-This folder is intentionally standalone: it can be copied into its own GitHub repository without any dependency on `FSI_Coupling3/`.
+The main benchmark is now the multidimensional case in `3D_benchmark/`. It was
+designed to match the theoretical framework of the associated paper: vector
+outputs, structured multi-output GP covariance, a fixed-point coupling map, and
+a comparison between a rigorous trajectory-conditioned sampling method and a
+practical fixed-path approximation.
 
-The benchmark is implemented in:
+## Repository Contents
 
-`analytical_benchmark/Analytical_Benchmark_Coupled_GP_Validation.py`
+```text
+.
+|-- Analytical_Benchmark_Coupled_GP_Validation.py
+|-- figures/
+|-- requirements.txt
+|-- 3D_benchmark/
+|   |-- Analytical_Benchmark_Coupled_GP_Validation_3D.py
+|   |-- README_3D_Benchmark.md
+|   |-- figures_multidimensional_validation/
+|       |-- multidim_surrogate_quality_table.tex
+|       |-- multidim_surrogate_quality_table.csv
+|       |-- multidim_method_validation.png
+|       |-- multidim_3d_output_cloud.png
+```
 
-This analytical benchmark runs out‑of‑the‑box and does not require the large `.npy` or covariance matrix assets used by the full fuel‑assembly case.
+The root-level script is the original scalar benchmark. The `3D_benchmark/`
+folder contains the multidimensional benchmark used for the paper validation.
 
-## Goal
+## Main 3D Benchmark
 
-Evaluate whether an efficient approximation for coupled‑GP uncertainty (Method 3) matches the reference sequential conditional sampling (Method 2) for a fixed‑point coupled system.
+The multidimensional benchmark considers two deterministic vector-valued
+functions
 
-The coupled system is defined by two functions `f1(x)` and `f2(x)` and a fixed‑point equation:
+$$
+g^{(1)},g^{(2)}:[0,1]^3\to\mathbb{R}^3,
+$$
 
-`y = 0.5 * (f1(y) + f2(y))`
+and a coupled fixed point
 
-The code builds GP surrogates for `f1` and `f2`, then compares the distribution of the coupled solution produced by two methods.
+$$
+\mathbf{y}^\star
+=
+\frac12\left(g^{(1)}(\mathbf{y}^\star)+g^{(2)}(\mathbf{y}^\star)\right).
+$$
+
+The example is written in the general composition form
+
+$$
+\mathcal{T}=\Gamma_2\circ\Gamma_1,
+$$
+
+where
+
+$$
+\Gamma_1:\mathbb{R}^3\to\mathbb{R}^6,
+\qquad
+\Gamma_1(\mathbf{x})
+=
+\left(x_1,x_2,x_3,g^{(1)}_1(\mathbf{x}),g^{(1)}_2(\mathbf{x}),g^{(1)}_3(\mathbf{x})\right),
+$$
+
+and
+
+$$
+\Gamma_2:\mathbb{R}^6\to\mathbb{R}^3,
+\qquad
+\Gamma_{2,j}(\mathbf{y})
+=
+\frac{y_{3+j}}{2}
++
+\frac12 g^{(2)}_j\left((y_\ell)_{\ell=1}^3\right),
+\quad j=1,2,3.
+$$
+
+The deterministic reference fixed point is
+
+$$
+\mathbf{y}^\star=(0.385949,\;0.386257,\;0.383437)^\top.
+$$
+
+## Structured GP Surrogates
+
+The GP surrogates used in the 3D benchmark have the specific structured form
+required by the coupling framework.
+
+For \(f_1:\mathbb{R}^3\to\mathbb{R}^6\),
+
+$$
+m_{f_1}(\mathbf{x})=(x_1,x_2,x_3,0,0,0),
+$$
+
+and
+
+$$
+\mathrm{Cov}\left(f_1(\mathbf{x}),f_1(\mathbf{x}')\right)
+=
+\mathrm{diag}\left(
+0,0,0,
+k(\mathbf{x},\mathbf{x}'),
+k(\mathbf{x},\mathbf{x}'),
+k(\mathbf{x},\mathbf{x}')
+\right).
+$$
+
+For \(f_2:\mathbb{R}^6\to\mathbb{R}^3\),
+
+$$
+m_{f_2}(\mathbf{y})
+=
+\left(\frac{y_4}{2},\frac{y_5}{2},\frac{y_6}{2}\right),
+$$
+
+and
+
+$$
+\mathrm{Cov}\left(f_2(\mathbf{y}),f_2(\mathbf{y}')\right)
+=
+\mathrm{diag}\left(
+k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'),
+k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}'),
+k(\tilde{\mathbf{y}},\tilde{\mathbf{y}}')
+\right),
+\qquad
+\tilde{\mathbf{y}}=(y_1,y_2,y_3).
+$$
+
+The scalar kernel \(k\) is a fixed Matern \(5/2\) kernel.
 
 ## Methods Compared
 
-Method 2: Sequential conditional sampling
-- At each fixed‑point iteration, sample from the GP posterior **conditioned on all previously sampled points**.
-- This is statistically rigorous but computationally heavy.
+The benchmark compares two uncertainty propagation strategies.
 
-Method 3: Constant‑offset approximation
-- Compute the deterministic mean path first.
-- Sample the joint GP posterior **only once** on that path.
-- Use sampled offsets as constants during the fixed‑point iterations.
-- This is much faster and is the proposed approximation.
+**Method 2: rigorous trajectory-conditioned sampling.**
+For each Monte Carlo replication, the GP is sampled sequentially along the
+random fixed-point trajectory, conditioning each new query on all previously
+sampled values from the same trajectory.
 
-## What the Script Produces
+**Method 3: fixed mean-path constant-offset approximation.**
+The deterministic GP-mean fixed-point path is computed once. Then GP offsets are
+sampled on this fixed path and reused inside the Monte Carlo coupling iteration.
 
-The script outputs both numerical comparisons and plots:
-
-- Distributions of the coupled solution for Method 2 vs Method 3.
-- Surrogate plots for different DOE sizes.
-- Comparison statistics:
-  - Mean difference
-  - Kolmogorov–Smirnov test
-  - Welch t‑test
-
-Generated figures:
-
-- `analytical_benchmark/figures/surrogates_smallDOE.png`
-- `analytical_benchmark/figures/surrogates_largeDOE.png`
-- `analytical_benchmark/figures/surrogates_overview.png`
-- `analytical_benchmark/figures/benchmark_validation_overview.png`
+The purpose of the benchmark is to show that Method 3 becomes a good
+approximation of Method 2 when the DOE is sufficiently dense.
 
 ## How to Run
 
-From the project root:
+Install the required packages:
 
 ```bash
-python3 -m pip install -r analytical_benchmark/requirements.txt
-python3 analytical_benchmark/Analytical_Benchmark_Coupled_GP_Validation.py
+python -m pip install -r requirements.txt
 ```
 
-If you run on a cluster or a read-only home directory, use a writable Matplotlib cache:
+Run the multidimensional benchmark:
 
 ```bash
-env MPLCONFIGDIR=/tmp/mpl python3 analytical_benchmark/Analytical_Benchmark_Coupled_GP_Validation.py
+python 3D_benchmark/Analytical_Benchmark_Coupled_GP_Validation_3D.py
 ```
 
-Key parameters are defined at the top of the file:
+Run the original scalar benchmark:
 
-- `FP_TOL`: fixed‑point tolerance
-- `MAX_IT`: maximum iterations
-- `MC_SAMPLES`: number of Monte Carlo samples
+```bash
+python Analytical_Benchmark_Coupled_GP_Validation.py
+```
 
-You can adjust DOE size and sampling strategy in the `configs` list.
+## Outputs
 
-## Interpretation of Results
+The 3D benchmark writes its outputs to:
 
-- If Method 3 matches Method 2 in mean and distribution (small KS statistic, non‑significant p‑values), the approximation is validated for this test case.
-- Large divergence indicates that sequential conditioning is necessary for accuracy.
+```text
+3D_benchmark/figures_multidimensional_validation/
+```
 
-This benchmark supports the main project by showing when the faster approximation is acceptable for uncertainty propagation in coupled surrogate systems.
+The main outputs are:
 
-## Notes
+- `multidim_surrogate_quality_table.tex`: LaTeX table of metamodel quality;
+- `multidim_surrogate_quality_table.csv`: same table in CSV format;
+- `multidim_method_validation.png`: histograms of the coupled output
+  components and Euclidean norm;
+- `multidim_3d_output_cloud.png`: complementary 3D cloud of Monte Carlo
+  coupled outputs.
 
-- The GP models use fixed Matérn kernels with no hyperparameter optimization for stability.
-- A tiny numerical jitter is added for Cholesky stability.
+## Summary of the Numerical Message
 
-If you want to extend the benchmark to multi‑dimensional inputs or alternative kernels, start by modifying the `f1_true`, `f2_true`, and `build_surrogates` sections.
+For a poor design (`smallDOE`, \(n=20\)), the rigorous and proposed methods show
+visible distributional differences because the stochastic trajectories can move
+away from the deterministic GP-mean path.
 
-## Data Availability Note
+For a denser design (`largeDOE`, \(n=500\)), the posterior uncertainty decreases,
+the stochastic trajectories remain close to the deterministic path, and Method 3
+becomes statistically close to Method 2 while remaining computationally cheaper.
 
-The full fuel‑assembly simulation depends on large covariance matrices and `.npy` datasets for the GP surrogates, which are not included in this Git repository due to size. This repository focuses on the code and development workflow; the missing surrogate assets must be provided separately.
+## Citation and Contact
 
-## Copyright
+If you use this benchmark, please cite the associated paper or contact the
+author for the appropriate reference.
 
 Copyright (c) 2026 Ali Abboud.  
 Contact: ali.ib.abboud95@gmail.com, ali.abboud@polytechnique.edu
